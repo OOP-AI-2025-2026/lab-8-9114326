@@ -1,0 +1,215 @@
+Завдання 1 Клас MyOptional<T>
+public class MyOptional<T> {
+
+    private T value;
+    private boolean present;
+
+    // Порожній конструктор
+    public MyOptional() {
+        this.present = false;
+        this.value = null;
+    }
+
+    // Конструктор з параметром
+    public MyOptional(T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("MyOptional не приймає null");
+        }
+        this.value = value;
+        this.present = true;
+    }
+
+    // Чи є значення?
+    public boolean isPresent() {
+        return present;
+    }
+
+    // Чи порожній?
+    public boolean isEmpty() {
+        return !present;
+    }
+
+    // Повернути значення або помилка
+    public T get() {
+        if (!present) {
+            throw new IllegalStateException("Значення відсутнє");
+        }
+        return value;
+    }
+
+    // Повернути значення або defaultValue
+    public T orElse(T defaultValue) {
+        return present ? value : defaultValue;
+    }
+
+    @Override
+    public String toString() {
+        return present ?
+                "MyOptional[value=" + value + "]" :
+                "MyOptional[empty]";
+    }
+}
+
+Перевірка у main:
+public class Main {
+    public static void main(String[] args) {
+
+        MyOptional<String> middleName = new MyOptional<>();
+        System.out.println(middleName);
+        System.out.println("isPresent: " + middleName.isPresent());
+        System.out.println("orElse: " + middleName.orElse("немає"));
+
+        MyOptional<String> username = new MyOptional<>("admin");
+        System.out.println(username);
+        System.out.println("isPresent: " + username.isPresent());
+        System.out.println("get(): " + username.get());
+        System.out.println("orElse: " + username.orElse("guest"));
+
+        try {
+            middleName.get();
+        } catch (IllegalStateException ex) {
+            System.out.println("Очікуваний виняток: " + ex.getMessage());
+        }
+
+        try {
+            MyOptional<String> broken = new MyOptional<>(null);
+        } catch (IllegalArgumentException ex) {
+            System.out.println("Правильно не прийняв null: " + ex.getMessage());
+        }
+    }
+}
+
+Завдання 2 — BookData + Comparable
+class BookData implements Comparable<BookData> {
+
+    private String title;
+    private String author;
+    private int reviews;
+    private double total;
+
+    public BookData(String title, String author, int reviews, double total) {
+        this.title = title;
+        this.author = author;
+        this.reviews = reviews;
+        this.total = total;
+    }
+
+    public double getRating() {
+        return reviews == 0 ? 0 : total / reviews;
+    }
+
+    @Override
+    public int compareTo(BookData other) {
+
+        double r1 = this.getRating();
+        double r2 = other.getRating();
+
+        if (r1 > r2) return -1;  // вище рейтинг → "менше"
+        if (r1 < r2) return 1;
+
+        return this.title.compareTo(other.title);
+    }
+
+    @Override
+    public String toString() {
+        return title + " (rating=" + getRating() + ")";
+    }
+}
+
+Завдання 3 — Узагальнений метод printArray()
+class Printer {
+
+    public <T> void printArray(T[] array) {
+        for (T element : array) {
+            System.out.println(element);
+        }
+    }
+}
+
+Завдання 4 — Узагальнений filter()
+import java.util.function.Predicate;
+
+public class Utils {
+
+    public static <T> T[] filter(T[] input, Predicate<T> predicate) {
+
+        T[] result = (T[]) new Object[input.length];
+        int count = 0;
+
+        for (T element : input) {
+            if (predicate.test(element)) {
+                result[count++] = element;
+            }
+        }
+
+        return java.util.Arrays.copyOf(result, count);
+    }
+}
+
+Завдання 5 — Узагальнений contains()
+public static <T extends Comparable<T>, V extends T> boolean contains(T[] array, V element) {
+
+    for (T el : array) {
+        if (el.compareTo(element) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Завдання 6 — Узагальнені кортежі (Tuple)
+
+GenericTwoTuple
+class GenericTwoTuple<T, V> {
+
+    public final T first;
+    public final V second;
+
+    public GenericTwoTuple(T first, V second) {
+        this.first = first;
+        this.second = second;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + first + ", " + second + ")";
+    }
+}
+
+GenericThreeTuple
+class GenericThreeTuple<T, V, S> {
+
+    private final GenericTwoTuple<T, V> pair;
+    public final S three;
+
+    public GenericThreeTuple(T first, V second, S three) {
+        this.pair = new GenericTwoTuple<>(first, second);
+        this.three = three;
+    }
+
+    public T getFirst() { return pair.first; }
+    public V getSecond() { return pair.second; }
+
+    @Override
+    public String toString() {
+        return "(" + getFirst() + ", " + getSecond() + ", " + three + ")";
+    }
+}
+
+Приклад використання
+public class Main {
+    public static void main(String[] args) {
+
+        GenericTwoTuple<String, Integer> t1 =
+                new GenericTwoTuple<>("Apple", 100);
+
+        System.out.println(t1);
+
+        GenericThreeTuple<String, Integer, Boolean> t2 =
+                new GenericThreeTuple<>("User42", 99, true);
+
+        System.out.println(t2);
+    }
+}
+
